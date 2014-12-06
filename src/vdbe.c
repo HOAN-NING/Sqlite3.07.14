@@ -3644,12 +3644,16 @@ case OP_OpenWrite: {
 ** the main database is read-only.  The ephemeral
 ** table is deleted automatically when the cursor is closed.
 **打开新的索引P1,P1指向一个事务表。
-**此索引经常打开去读取和更改。
+**此索引经常打开去读取和更改,即使主数据库是只读的。
+**这个短暂的表单会站在索引关闭时自动删除。
 ** P2 is the number of columns in the ephemeral table.
 ** The cursor points to a BTree table if P4==0 and to a BTree index
 ** if P4 is not 0.  If P4 is not NULL, it points to a KeyInfo structure
 ** that defines the format of keys in the index.
-**
+**P2是在短暂表单里索引的数目。
+**如果P4是0，那么这个索引指向一个BTree表
+**如果P4不是0，那么这个索引指向一个BTree索引。
+**如果P4不空
 ** This opcode was once called OpenTemp.  But that created
 ** confusion because the term "temp table", might refer either
 ** to a TEMP table at the SQL level, or to a table opened by
