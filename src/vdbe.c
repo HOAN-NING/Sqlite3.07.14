@@ -3653,25 +3653,30 @@ case OP_OpenWrite: {
 **P2是在短暂表单里索引的数目。
 **如果P4是0，那么这个索引指向一个BTree表
 **如果P4不是0，那么这个索引指向一个BTree索引。
-**如果P4不空
+**如果P4不空,它就指向在索引中定义关键版本的关键信息结构.
 ** This opcode was once called OpenTemp.  But that created
 ** confusion because the term "temp table", might refer either
 ** to a TEMP table at the SQL level, or to a table opened by
 ** this opcode.  Then this opcode was call OpenVirtual.  But
 ** that created confusion with the whole virtual-table idea.
-**
+** 这个操作码曾被称为OpenTemp。
+** 但是，这造成了混乱，因为所谓的“临时表”，可能是指无论是到一个临时表中的SQL级别，或将打开的这个操作码表。
+** 那么这个操作码是叫OpenVirtual。但是，随着整个虚拟表想法，造成了混乱。
 ** The P5 parameter can be a mask of the BTREE_* flags defined
 ** in btree.h.  These flags control aspects of the operation of
 ** the btree.  The BTREE_OMIT_JOURNAL and BTREE_SINGLE flags are
 ** added automatically.
+** P5参数可能成为一个在btree.h中定义的BTREE_*标志隐藏。
+** 这些标志控制btree的操作部分。BTREE_OMIT_JOURNAL和BTREE_SINGLE标志
 */
 /* Opcode: OpenAutoindex P1 P2 * P4 *
-**
+** 操作码：打开自动索引P1 P2 * P4 *
 ** This opcode works the same as OP_OpenEphemeral.  It has a
 ** different name to distinguish its use.  Tables created using
 ** by this opcode will be used for automatically created transient
 ** indices in joins.
-** 第一次使用github
+** 这个操作码与OP_OpenEphemeral的工作相同。他有一个不同的名字去区分他的用法。
+** 表单通过这个操作码产生了使用，它将会被用做链接中自动产生的短暂指数。
 */
 
 case OP_OpenAutoindex:
@@ -3698,6 +3703,8 @@ case OP_OpenEphemeral: {
     ** sqlite3BtreeCreateTable() with the BTREE_BLOBKEY flag before
     ** opening it. If a transient table is required, just use the
     ** automatically created table with root-page 1 (an BLOB_INTKEY table).
+    ** 如果一个短暂指数被请求了，在打开它之前，通过呼叫sqlite3BtreeCreateTable()与BTREE_BLOBKEY标志来生成他。
+    ** 如果一个短暂表单被请求了，那就去用自动生成表单和脚本页 1（一个BLOB_INTKEY表）。
     */
     if( pOp->p4.pKeyInfo ){
       int pgno;
@@ -3722,10 +3729,12 @@ case OP_OpenEphemeral: {
 }
 
 /* Opcode: OpenSorter P1 P2 * P4 *
-**
+** 操作码：OpenSorter P1 P2 * P4 *
 ** This opcode works like OP_OpenEphemeral except that it opens
 ** a transient index that is specifically designed to sort large
 ** tables using an external merge-sort algorithm.
+** 这个操作码像OP_OpenEphemeral那样工作，除了它打开一个短暂的索引，
+** 这个索引是专门设计去使用外部合并排序算法的大型表进行排序短暂的指标.
 */
 case OP_SorterOpen: {
   VdbeCursor *pCx;
@@ -3744,19 +3753,24 @@ case OP_SorterOpen: {
 }
 
 /* Opcode: OpenPseudo P1 P2 P3 * *
-**
+** 操作码：OpenPseudo P1 P2 P3 * *
 ** Open a new cursor that points to a fake table that contains a single
 ** row of data.  The content of that one row in the content of memory
 ** register P2.  In other words, cursor P1 becomes an alias for the 
 ** MEM_Blob content contained in register P2.
-**
+** 打开一个新的光标指向一个虚设表，其中包含了数据的单一行。
+** 那一行的内容在记忆登记 P2的内容里。
+** 换句话说，光标P1变成了一个MEM_Blob的别号内容包含在登记P2里。
 ** A pseudo-table created by this opcode is used to hold a single
 ** row output from the sorter so that the row can be decomposed into
 ** individual columns using the OP_Column opcode.  The OP_Column opcode
 ** is the only cursor opcode that works with a pseudo-table.
-**
+** 一个由这个操作码生成的伪表单用于从分拣机中提炼出单行输出，
+** 这样的话，该行用OP_Column操作码可以被分解成独立的列。
+** OP_Column操作码是唯一的光标操作码，他与伪表一起工作。
 ** P3 is the number of fields in the records that will be stored by
 ** the pseudo-table.
+**P3是在记录中的字段的数字，此记录将会被虚拟表所储存。
 */
 case OP_OpenPseudo: {
   VdbeCursor *pCx;
@@ -3772,9 +3786,10 @@ case OP_OpenPseudo: {
 }
 
 /* Opcode: Close P1 * * * *
-**
+** 操作码：关闭P1 * * * *
 ** Close a cursor previously opened as P1.  If P1 is not
 ** currently open, this instruction is a no-op.
+** 关闭一个光标钱打开P1。如果P1不是及时地打开，那这个指令是个空操作。
 */
 case OP_Close: {
   assert( pOp->p1>=0 && pOp->p1<p->nCursor );
@@ -3784,56 +3799,72 @@ case OP_Close: {
 }
 
 /* Opcode: SeekGe P1 P2 P3 P4 *
-**
+** 操作码：寻找Ge P1 P2 P3 P3 *
 ** If cursor P1 refers to an SQL table (B-Tree that uses integer keys), 
 ** use the value in register P3 as the key.  If cursor P1 refers 
 ** to an SQL index, then P3 is the first in an array of P4 registers 
 ** that are used as an unpacked index key. 
-**
+** 如果光标P1指向一个SQL表（用整形关键字的B-Tree），
+** 用寄存器P3的值作为关键字。如果光标P1指向一个SQL指数，那么P3是P4寄存器的数组里的第一个，
+** 这个寄存器被用来当作一个解压的指数关键字。
 ** Reposition cursor P1 so that  it points to the smallest entry that 
 ** is greater than or equal to the key value. If there are no records 
 ** greater than or equal to the key and P2 is not zero, then jump to P2.
-**
+** 因此，复位光标P1指向最小的入口，这个入口比关键字的值大或者一样。
+** 如果没有记录比关键字大或者等于关键字，并且P2不等于0，那么就跳到P2。
 ** See also: Found, NotFound, Distinct, SeekLt, SeekGt, SeekLe
+** 参见：Found, NotFound, Distinct, SeekLt, SeekGt, SeekLe
 */
 /* Opcode: SeekGt P1 P2 P3 P4 *
-**
+** 操作码：SeekGt P1 P2 P3 P4 *
 ** If cursor P1 refers to an SQL table (B-Tree that uses integer keys), 
 ** use the value in register P3 as a key. If cursor P1 refers 
 ** to an SQL index, then P3 is the first in an array of P4 registers 
 ** that are used as an unpacked index key. 
-**
+** 如果光标P1指向一个SQL表（用整形关键字的B-Tree），
+** 用寄存器P3的值作为关键字。如果光标P1指向一个SQL指数，那么P3是P4寄存器的数组里的第一个，
+** 这个寄存器被用来当作一个解压的指数关键字。
 ** Reposition cursor P1 so that  it points to the smallest entry that 
 ** is greater than the key value. If there are no records greater than 
 ** the key and P2 is not zero, then jump to P2.
-**
+** 因此，复位光标P1指向最小的入口，这个入口比关键字的值大。
+** 如果没有记录比关键字大并且P2不等于0，那么就跳到P2。
 ** See also: Found, NotFound, Distinct, SeekLt, SeekGe, SeekLe
+ 参见：Found, NotFound, Distinct, SeekLt, SeekGe, SeekLe
 */
 /* Opcode: SeekLt P1 P2 P3 P4 * 
-**
+** 操作码：SeekLt P1 P2 P3 P4 *
 ** If cursor P1 refers to an SQL table (B-Tree that uses integer keys), 
 ** use the value in register P3 as a key. If cursor P1 refers 
 ** to an SQL index, then P3 is the first in an array of P4 registers 
 ** that are used as an unpacked index key. 
-**
+** 如果光标P1指向一个SQL表（用整形关键字的B-Tree），
+** 用寄存器P3的值作为关键字。如果光标P1指向一个SQL指数，那么P3是P4寄存器的数组里的第一个，
+** 这个寄存器被用来当作一个解压的指数关键字。
 ** Reposition cursor P1 so that  it points to the largest entry that 
 ** is less than the key value. If there are no records less than 
 ** the key and P2 is not zero, then jump to P2.
-**
+** 因此，复位光标P1指向最大的入口，这个入口比关键字的值小。
+** 如果没有记录比关键字小并且P2不等于0，那么就跳到P2。
 ** See also: Found, NotFound, Distinct, SeekGt, SeekGe, SeekLe
+** 参见：Found, NotFound, Distinct, SeekGt, SeekGe, SeekLe
 */
 /* Opcode: SeekLe P1 P2 P3 P4 *
-**
+** 操作码：SeekLe P1 P2 P3 P4 *
 ** If cursor P1 refers to an SQL table (B-Tree that uses integer keys), 
 ** use the value in register P3 as a key. If cursor P1 refers 
 ** to an SQL index, then P3 is the first in an array of P4 registers 
 ** that are used as an unpacked index key. 
-**
+** 如果光标P1指向一个SQL表（用整形关键字的B-Tree），
+** 用寄存器P3的值作为关键字。如果光标P1指向一个SQL指数，那么P3是P4寄存器的数组里的第一个，
+** 这个寄存器被用来当作一个解压的指数关键字。
 ** Reposition cursor P1 so that it points to the largest entry that 
 ** is less than or equal to the key value. If there are no records 
 ** less than or equal to the key and P2 is not zero, then jump to P2.
-**
+** 因此，复位光标P1指向最大的入口，这个入口比关键字的值小或者相等。
+** 如果没有记录比关键字小或相等并且P2不等于0，那么就跳到P2。
 ** See also: Found, NotFound, Distinct, SeekGt, SeekGe, SeekLt
+** 参见：Found, NotFound, Distinct, SeekGt, SeekGe, SeekLt
 */
 case OP_SeekLt:         /* jump, in3 */
 case OP_SeekLe:         /* jump, in3 */
@@ -3861,28 +3892,39 @@ case OP_SeekGt: {       /* jump, in3 */
     if( pC->isTable ){
       /* The input value in P3 might be of any type: integer, real, string,
       ** blob, or NULL.  But it needs to be an integer before we can do
-      ** the seek, so covert it. */
+      ** the seek, so covert it. 
+      ** 可能是任何类型：整形，实数，字符串型，二进制类或者空类型。但是他需要变成一个整形
+      ** 在我们可以查询之前，所以隐藏它。
+      */
       pIn3 = &aMem[pOp->p3];
       applyNumericAffinity(pIn3);
       iKey = sqlite3VdbeIntValue(pIn3);
       pC->rowidIsValid = 0;
 
       /* If the P3 value could not be converted into an integer without
-      ** loss of information, then special processing is required... */
+      ** loss of information, then special processing is required... 
+      ** 如果P3的值不可以在不丢失信息的情况下被转换为一个整形，那么特殊进程将被申请。。
+      */
       if( (pIn3->flags & MEM_Int)==0 ){
         if( (pIn3->flags & MEM_Real)==0 ){
           /* If the P3 value cannot be converted into any kind of a number,
-          ** then the seek is not possible, so jump to P2 */
+          ** then the seek is not possible, so jump to P2 
+          ** 如果P3的值被转换成为任何类型的数字，那么这个查询是不被允许的，因此跳转到P2
+          */
           pc = pOp->p2 - 1;
           break;
         }
         /* If we reach this point, then the P3 value must be a floating
-        ** point number. */
+        ** point number. 
+        ** 如果我们达到这一点，那么P3的值必须是一个浮点数。
+        */
         assert( (pIn3->flags & MEM_Real)!=0 );
 
         if( iKey==SMALLEST_INT64 && (pIn3->r<(double)iKey || pIn3->r>0) ){
           /* The P3 value is too large in magnitude to be expressed as an
-          ** integer. */
+          ** integer.
+          ** P3的值太大以至于不能被表达成一个整形。
+          */
           res = 1;
           if( pIn3->r<0 ){
             if( oc>=OP_SeekGe ){  assert( oc==OP_SeekGe || oc==OP_SeekGt );
@@ -3900,10 +3942,14 @@ case OP_SeekGt: {       /* jump, in3 */
           }
           break;
         }else if( oc==OP_SeekLt || oc==OP_SeekGe ){
-          /* Use the ceiling() function to convert real->int */
+          /* Use the ceiling() function to convert real->int 
+          ** 运用向上取整函数功能去将实数转换为整形
+          */
           if( pIn3->r > (double)iKey ) iKey++;
         }else{
-          /* Use the floor() function to convert real->int */
+          /* Use the floor() function to convert real->int 
+          ** 运用向下取整函数功能去将实数转化为整形
+          */
           assert( oc==OP_SeekLe || oc==OP_SeekGt );
           if( pIn3->r < (double)iKey ) iKey--;
         }
@@ -3924,6 +3970,7 @@ case OP_SeekGt: {       /* jump, in3 */
       r.nField = (u16)nField;
 
       /* The next line of code computes as follows, only faster:
+      ** 代码的下一行代码计算如下，只有更快：
       **   if( oc==OP_SeekGt || oc==OP_SeekLe ){
       **     r.flags = UNPACKED_INCRKEY;
       **   }else{
@@ -3969,6 +4016,7 @@ case OP_SeekGt: {       /* jump, in3 */
       }else{
         /* res might be negative because the table is empty.  Check to
         ** see if this is the case.
+        ** res可能是负因为表单是空的。请检查是否是这种情况。
         */
         res = sqlite3BtreeEof(pC->pCursor);
       }
@@ -3981,6 +4029,8 @@ case OP_SeekGt: {       /* jump, in3 */
     /* This happens when attempting to open the sqlite3_master table
     ** for read access returns SQLITE_EMPTY. In this case always
     ** take the jump (since there are no records in the table).
+    ** 当试图打开sqlite3_master表单为了读取回报SQLITE_EMPTY的时候，发生了这个。
+    ** 在这种情况下，始终跳转（从表单中没有记录的情况下开始）。
     */
     pc = pOp->p2 - 1;
   }
@@ -3988,13 +4038,16 @@ case OP_SeekGt: {       /* jump, in3 */
 }
 
 /* Opcode: Seek P1 P2 * * *
-**
+** 操作码：Seek P1 P2 * * *
 ** P1 is an open table cursor and P2 is a rowid integer.  Arrange
 ** for P1 to move so that it points to the rowid given by P2.
-**
+** P1是一个打开表单的游标并且P2是一个rowid整形。
+** 安排P1的移动使它指向P2给出的rewid。
 ** This is actually a deferred seek.  Nothing actually happens until
 ** the cursor is used to read a record.  That way, if no reads
 ** occur, no unnecessary I/O happens.
+** 这事实上是一个延期的查找。直到游标被用来读取记录的时候事实上没有任何事情发生。
+** 这样的话，如果没有读操作发生，没有不必要I/O发生。
 */
 case OP_Seek: {    /* in2 */
   VdbeCursor *pC;
@@ -4015,28 +4068,36 @@ case OP_Seek: {    /* in2 */
   
 
 /* Opcode: Found P1 P2 P3 P4 *
-**
+** 操作码：Found P1 P2 P3 P4 *
 ** If P4==0 then register P3 holds a blob constructed by MakeRecord.  If
 ** P4>0 then register P3 is the first of P4 registers that form an unpacked
 ** record.
-**
+** 如果P4为0,那么寄存器P3持有MakeRecord构建的一个块。
+** 如果P4>0那么寄存器P3是P4寄存器的第一个，这个寄存器来自一个未解压的记录。
 ** Cursor P1 is on an index btree.  If the record identified by P3 and P4
 ** is a prefix of any entry in P1 then a jump is made to P2 and
 ** P1 is left pointing at the matching entry.
+** 光标P1是在一个指数btree上。如果这个记录确定P3并且P4是一个在P1中的任何输入的字首，
+** 然后做出了向P2的跳转，并且P1向左指向匹配条目。
 */
 /* Opcode: NotFound P1 P2 P3 P4 *
-**
+** 操作码：NotFound P1 P2 P3 P4 *
 ** If P4==0 then register P3 holds a blob constructed by MakeRecord.  If
 ** P4>0 then register P3 is the first of P4 registers that form an unpacked
 ** record.
-** 
+** 如果P4为0,那么寄存器P3持有MakeRecord构建的一个块。
+** 如果P4>0那么寄存器P3是P4寄存器的第一个，这个寄存器来自一个未解压的记录。
 ** Cursor P1 is on an index btree.  If the record identified by P3 and P4
 ** is not the prefix of any entry in P1 then a jump is made to P2.  If P1 
 ** does contain an entry whose prefix matches the P3/P4 record then control
 ** falls through to the next instruction and P1 is left pointing at the
 ** matching entry.
-**
+** 光标P1是在一个指数btree上。
+** 如果这个记录确定P3并且P4不是一个在P1中的任何输入的字首，然后做出了向P2的跳转。
+** 如果P1包含一个输入，这个输入的字首匹配P3/P4记录，然后控制降落至下一条指令并且
+** P1左指向匹配输入。
 ** See also: Found, NotExists, IsUnique
+** 参见：Found, NotExists, IsUnique
 */
 case OP_NotFound:       /* jump, in3 */
 case OP_Found: {        /* jump, in3 */
@@ -4100,30 +4161,39 @@ case OP_Found: {        /* jump, in3 */
 }
 
 /* Opcode: IsUnique P1 P2 P3 P4 *
-**
+** 操作码：IsUnique P1 P2 P3 P4 *
 ** Cursor P1 is open on an index b-tree - that is to say, a btree which
 ** no data and where the key are records generated by OP_MakeRecord with
 ** the list field being the integer ROWID of the entry that the index
 ** entry refers to.
-**
+** 游标P1在一个指数b-tree上打开那就是说，一个没有数据并且关键字是由OP_MakeRecord
+** 生成的与列表字段是该索引条目指的条目的整数的ROWID记录的btree。
 ** The P3 register contains an integer record number. Call this record 
 ** number R. Register P4 is the first in a set of N contiguous registers
 ** that make up an unpacked index key that can be used with cursor P1.
 ** The value of N can be inferred from the cursor. N includes the rowid
 ** value appended to the end of the index record. This rowid value may
 ** or may not be the same as R.
-**
+** P3寄存器包含一个整形记录数字。把这个记录数字称作R。
+** P4寄存器在一系列N邻近的寄存器中是第一个，这些寄存器组成了一个未解压的指数关键字
+** 这个关键字可以与光标P1一起使用。
+** N的值可以从光标来推断。N包括rowid的值附加在指数记录的最后。rowid的值可能或者不可能
+** 与R一模一样。
 ** If any of the N registers beginning with register P4 contains a NULL
 ** value, jump immediately to P2.
-**
+** 如果任何N寄存器以P4寄存器开始包含一个空值，立刻跳转到P2.
 ** Otherwise, this instruction checks if cursor P1 contains an entry
 ** where the first (N-1) fields match but the rowid value at the end
 ** of the index entry is not R. If there is no such entry, control jumps
 ** to instruction P2. Otherwise, the rowid of the conflicting index
 ** entry is copied to register P3 and control falls through to the next
 ** instruction.
-**
+** 否则，这条指令检查是否光标P1包含一个条目，在那里第一个（N-1）字段匹配但是
+** 在指数条目最后的rowid的值不是R。
+** 如果没有这样的一个条目，控制跳转到指令P2.否则，相互矛盾的指标条目的rowid
+** 复制到P3寄存器上并且控制降落到下一个指令。
 ** See also: NotFound, NotExists, Found
+** 参见：NotFound, NotExists, Found
 */
 case OP_IsUnique: {        /* jump, in3 */
   u16 ii;
@@ -4136,19 +4206,25 @@ case OP_IsUnique: {        /* jump, in3 */
 
   pIn3 = &aMem[pOp->p3];
   aMx = &aMem[pOp->p4.i];
-  /* Assert that the values of parameters P1 and P4 are in range. */
+  /* Assert that the values of parameters P1 and P4 are in range. 
+  ** 断言参数P1和P4的值是在范围内。
+  */
   assert( pOp->p4type==P4_INT32 );
   assert( pOp->p4.i>0 && pOp->p4.i<=p->nMem );
   assert( pOp->p1>=0 && pOp->p1<p->nCursor );
 
-  /* Find the index cursor. */
+  /* Find the index cursor.
+  ** 寻找指数光标
+  */
   pCx = p->apCsr[pOp->p1];
   assert( pCx->deferredMoveto==0 );
   pCx->seekResult = 0;
   pCx->cacheStatus = CACHE_STALE;
   pCrsr = pCx->pCursor;
 
-  /* If any of the values are NULL, take the jump. */
+  /* If any of the values are NULL, take the jump. 
+  **如果任何的值是空的，执行跳转。
+  */
   nField = pCx->pKeyInfo->nField;
   for(ii=0; ii<nField; ii++){
     if( aMx[ii].flags & MEM_Null ){
@@ -4160,7 +4236,9 @@ case OP_IsUnique: {        /* jump, in3 */
   assert( (aMx[nField].flags & MEM_Null)==0 );
 
   if( pCrsr!=0 ){
-    /* Populate the index search key. */
+    /* Populate the index search key.
+    **填充索引搜索键
+    */
     r.pKeyInfo = pCx->pKeyInfo;
     r.nField = nField + 1;
     r.flags = UNPACKED_PREFIX_SEARCH;
@@ -4169,13 +4247,18 @@ case OP_IsUnique: {        /* jump, in3 */
     { int i; for(i=0; i<r.nField; i++) assert( memIsValid(&r.aMem[i]) ); }
 #endif
 
-    /* Extract the value of R from register P3. */
+    /* Extract the value of R from register P3. 
+    ** 从P3寄存器中提取R的值
+    */
     sqlite3VdbeMemIntegerify(pIn3);
     R = pIn3->u.i;
 
     /* Search the B-Tree index. If no conflicting record is found, jump
     ** to P2. Otherwise, copy the rowid of the conflicting record to
-    ** register P3 and fall through to the next instruction.  */
+    ** register P3 and fall through to the next instruction. 
+    ** 搜索B-Tree指数。如果没有找到相互矛盾的记录，跳转到P2. 
+    ** 否则，复制相互矛盾的记录的rowid到P3寄存器并且降落到下一条指令上。
+    */
     rc = sqlite3BtreeMovetoUnpacked(pCrsr, &r, 0, 0, &pCx->seekResult);
     if( (r.flags & UNPACKED_PREFIX_SEARCH) || r.rowid==R ){
       pc = pOp->p2 - 1;
@@ -4187,18 +4270,22 @@ case OP_IsUnique: {        /* jump, in3 */
 }
 
 /* Opcode: NotExists P1 P2 P3 * *
-**
+** 操作码：NotExists P1 P2 P3 * *
 ** Use the content of register P3 as an integer key.  If a record 
 ** with that key does not exist in table of P1, then jump to P2. 
 ** If the record does exist, then fall through.  The cursor is left 
 ** pointing to the record if it exists.
-**
+** 用P3寄存器的目录作为一个整形关键字。如果一个记录与那个关键字在P1的表单中不存在
+** 那么就跳转到P2。如果这条记录存在，那么就不跳转。
+** 如果存在的话光标向左指向记录。
 ** The difference between this operation and NotFound is that this
 ** operation assumes the key is an integer and that P1 is a table whereas
 ** NotFound assumes key is a blob constructed from MakeRecord and
 ** P1 is an index.
-**
+** 在操作与NotFound之间的不同是这个操作假设这个关键字是整形并且P1是一个表单而
+** NotFound假设关键字是一个从MakeRecord构建的块并且P1是一个指数。
 ** See also: Found, NotFound, IsUnique
+** 参见：Found, NotFound, IsUnique
 */
 case OP_NotExists: {        /* jump, in3 */
   VdbeCursor *pC;
@@ -4231,6 +4318,7 @@ case OP_NotExists: {        /* jump, in3 */
   }else{
     /* This happens when an attempt to open a read cursor on the 
     ** sqlite_master table returns SQLITE_EMPTY.
+    ** 当一个尝试去打开一个在sqlite_master表单的读取光标回转到SQLITE_EMPTY的时候发生此事。
     */
     pc = pOp->p2 - 1;
     assert( pC->rowidIsValid==0 );
@@ -4240,11 +4328,14 @@ case OP_NotExists: {        /* jump, in3 */
 }
 
 /* Opcode: Sequence P1 P2 * * *
-**
+** 操作码：Sequence P1 P2 * * *
 ** Find the next available sequence number for cursor P1.
 ** Write the sequence number into register P2.
 ** The sequence number on the cursor is incremented after this
 ** instruction.  
+** 为光标P1寻找下一个可用序列数字。
+** 把序列数字写入到寄存器P2.
+** 在寄存器上的序列数字在这个指令之后增加了。
 */
 case OP_Sequence: {           /* out2-prerelease */
   assert( pOp->p1>=0 && pOp->p1<p->nCursor );
@@ -4255,18 +4346,24 @@ case OP_Sequence: {           /* out2-prerelease */
 
 
 /* Opcode: NewRowid P1 P2 P3 * *
-**
+** 操作码：NewRowid P1 P2 P3 * *
 ** Get a new integer record number (a.k.a "rowid") used as the key to a table.
 ** The record number is not previously used as a key in the database
 ** table that cursor P1 points to.  The new record number is written
 ** written to register P2.
-**
+** 得到一个新的整形记录数字（a.k.a "rowid"）用作一个表单的关键字。
+** 这个记录数字不像先前用的作为一个被寄存器P1指向的数据库表单的关键字。
+** 新的记录数字被写到了寄存器P2上。
 ** If P3>0 then P3 is a register in the root frame of this VDBE that holds 
 ** the largest previously generated record number. No new record numbers are
 ** allowed to be less than this value. When this value reaches its maximum, 
 ** an SQLITE_FULL error is generated. The P3 register is updated with the '
 ** generated record number. This P3 mechanism is used to help implement the
 ** AUTOINCREMENT feature.
+** 如果P3>0,那么P3在VDBE中的根帧里是一个寄存器。VDBE持有最大的上一代记录数字。
+** 没有新的记录数字是被允许比这个值小。当这个值达到了它的最大值，一个SQLITE_FULL
+** 错误就产生了。寄存器P3伴随着记录数字的产生而更新。
+** P3机制被用来帮助实施AUTOINCREMENT特征。
 */
 case OP_NewRowid: {           /* out2-prerelease */
   i64 v;                 /* The new rowid */
@@ -4282,20 +4379,25 @@ case OP_NewRowid: {           /* out2-prerelease */
   pC = p->apCsr[pOp->p1];
   assert( pC!=0 );
   if( NEVER(pC->pCursor==0) ){
-    /* The zero initialization above is all that is needed */
+    /* The zero initialization above is all that is needed 
+	** 零初始化以上是所有需要
+	*/
   }else{
     /* The next rowid or record number (different terms for the same
     ** thing) is obtained in a two-step algorithm.
-    **
+    ** 下一个rowid或者记录数字（同一个事物的不同术语）是在一个两步骤的算法获得。
     ** First we attempt to find the largest existing rowid and add one
     ** to that.  But if the largest existing rowid is already the maximum
     ** positive integer, we have to fall through to the second
     ** probabilistic algorithm
-    **
+    ** 首先我们尝试去寻找最大存在的rowid并且加一个到上面。
+    ** 但是如果最大存在的rowid是已经最大积极整形，我们必须降落到第二个概率算法上。
     ** The second algorithm is to select a rowid at random and see if
     ** it already exists in the table.  If it does not exist, we have
     ** succeeded.  If the random rowid does exist, we select a new one
-    ** and try again, up to 100 times.
+    ** and try again, up to 100 times  
+    ** 第二个算法就是去随机选择一个rowid并且看它是否已经存在在表单里。
+     ** 如果不存在，我们就成功了。如果随机rowid存在，我们选择一个新的并且再次尝试，知道100次。
     */
     assert( pC->isTable );
 
